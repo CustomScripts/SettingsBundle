@@ -1,0 +1,3 @@
+_settings:
+    pattern:  /settings
+    defaults: { _controller: CSSettingsBundle:Settings:index }

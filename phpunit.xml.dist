@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit bootstrap="./vendor/autoload.php" colors="true">
+    <testsuites>
+        <testsuite name="SettingsBundle">
+            <directory suffix="Test.php">./tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist>
+            <directory>./tests</directory>
+            <exclude>
+                <directory>./src/CS/SettingsBundle/Resources</directory>
+                <directory>./src/CS/SettingsBundle/Tests</directory>
+                <directory>./vendor</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

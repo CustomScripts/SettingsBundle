@@ -1,0 +1,27 @@
+{
+    "name": "customscripts/settings-bundle",
+    "type": "symfony-bundle",
+    "description": "Manage application settings",
+    "keywords": [
+        "settings"
+    ],
+    "homepage": "http://github.com/CustomScripts/SettingsBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pierre du Plessis",
+            "email": "info@customscripts.co.za"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/framework-bundle": "2.2.*@dev",
+        "customscripts/core-bundle" : "dev-master"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-0": {
+            "CS": "src/"
+        }
+    }
+}

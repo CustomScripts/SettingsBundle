@@ -1,0 +1,43 @@
+{#
+ #
+ # This file is part of the CSSettingsBundle package.
+ #
+ # (c) Pierre du Plessis <info@customscripts.co.za>
+ #
+ # For the full copyright and license information, please view the LICENSE
+ # file that was distributed with this source code.
+#}
+
+{% extends 'CSCoreBundle:Layout:single_column.html.twig' %}
+
+{% block title %}{{ "Settings"|trans }}{% endblock %}
+
+{% block content %}
+    <div class="tabbable tabs-left">
+        <ul class="nav nav-tabs">
+            {% for section in sections %}
+                <li{{ loop.first ? ' class="active"' }}>
+                    <a href="#{{ section }}" data-toggle="tab">
+                        {{ section|trans|title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <form class="form-horizontal" method="post" {{ form_enctype(form) }}>
+            <div class="tab-content">
+                {% for section in sections %}
+                    <div class="tab-pane{{ loop.first ? ' active' }}" id="{{ section }}">
+                        <legend>{{ section|title }}</legend>
+
+                {{ form_widget(form[section]) }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-info"><i class="icon-save"></i> {{ "Save"|trans }}</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

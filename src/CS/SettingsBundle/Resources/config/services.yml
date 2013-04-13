@@ -1,0 +1,7 @@
+parameters:
+    cs.settings.class: CS\SettingsBundle\Manager\SettingsManager
+
+services:
+    settings:
+        class: %cs.settings.class%
+        arguments: [@doctrine]
