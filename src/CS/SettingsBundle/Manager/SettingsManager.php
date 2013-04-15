@@ -79,8 +79,12 @@ class SettingsManager
      * @throws \Exception
      * @return mixed
      */
-    public function get($setting)
+    public function get($setting = null)
     {
+        if(empty($setting)) {
+            return $this->getSettings();
+        }
+
         if (strpos($setting, '.') !== false) {
             $split = array_filter(explode('.', $setting));
 
@@ -115,5 +119,25 @@ class SettingsManager
         }
 
         return $this->accessor->getValue($this->settings, $setting);
+    }
+
+    /**
+     * Get all the top-level sections
+     *
+     * @return array
+     */
+    public function getSections()
+    {
+        return $this->sections;
+    }
+
+    /**
+     * Get the settings
+     *
+     * @return ArrayCollection
+     */
+    public function getSettings()
+    {
+        return $this->settings;
     }
 }
