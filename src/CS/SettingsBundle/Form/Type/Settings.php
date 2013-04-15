@@ -15,12 +15,13 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Form\Form;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class Settings extends AbstractType
 {
     protected $settings;
 
-    public function __construct(array $settings)
+    public function __construct($settings)
     {
         $this->settings = $settings;
     }
@@ -31,8 +32,12 @@ class Settings extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        foreach($this->settings as $setting) {
-            $builder->add($setting->getKey(), null, array('help' => $setting->getDescription()));
+        foreach($this->settings as $key => $setting) {
+            if($setting instanceof ArrayCollection) {
+                $builder->add($key, new self($setting));
+            } else {
+                $builder->add($setting->getKey(), null, array('help' => $setting->getDescription()));
+            }
         }
     }
 
@@ -42,6 +47,6 @@ class Settings extends AbstractType
      */
     public function getName()
     {
-        return 'settings_general';
+        return 'settings';
     }
 }

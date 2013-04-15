@@ -35,7 +35,7 @@ class Setting
     private $description;
 
     /**
-     * @ORM\Column(name="section", type="string", length=125, nullable=false)
+     * @ORM\ManytoOne(targetEntity="Section", inversedBy="settings")
      */
     private $section;
 
@@ -121,7 +121,7 @@ class Setting
     /**
      * Get section
      *
-     * @return string
+     * @return section
      */
     public function getSection()
     {
@@ -131,13 +131,18 @@ class Setting
     /**
      * Set section
      *
-     * @param  mixed   $section
+     * @param Section $section
      * @return Setting
      */
-    public function setSection($section)
+    public function setSection(Section $section)
     {
         $this->section = $section;
 
         return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->value;
     }
 }

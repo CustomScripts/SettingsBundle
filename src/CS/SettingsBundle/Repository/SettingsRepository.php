@@ -47,30 +47,12 @@ class SettingsRepository extends EntityRepository
 
         $result = $query->getResult();
 
-        if ($combineArray) {
-            return array_combine(ArrayUtil::column($result, 'key'), ArrayUtil::column($result, 'value'));
+        if(count($result) > 0) {
+            if ($combineArray) {
+                return array_combine(ArrayUtil::column($result, 'key'), ArrayUtil::column($result, 'value'));
+            }
         }
 
         return $result;
-    }
-
-    /**
-     * Gets an array of all the available sections
-     *
-     * @return array
-     */
-    public function getSections()
-    {
-        $qb = $this->createQueryBuilder('s')
-                   ->select('DISTINCT(s.section)')
-                   ->orderBy('s.key', 'asc');
-
-        $query = $qb->getQuery()
-                    ->useQueryCache(true)
-                    ->useResultCache(true, (60 * 60 * 24 * 7), 'app_config_sections'); // cache the result for 1 week
-
-        $results = $query->getArrayResult();
-
-        return ArrayUtil::column($results, 'section');
     }
 }

@@ -1,0 +1,17 @@
+{% macro settings_section(section, form, level = 1) %}
+    {% set form_extras %}{% spaceless %}
+        {% for child in section.children %}
+            {{ _self.settings_section(child, form[section], level + 1) }}
+        {% endfor %}
+        {% endspaceless %}{% endset %}
+
+     {% if form[section]|length and not form_extras|length %}
+        <legend>
+            {{ section|title }}
+        </legend>
+    {% endif %}
+
+    {{ form_widget(form[section]) }}
+
+    {{ form_extras }}
+{% endmacro %}

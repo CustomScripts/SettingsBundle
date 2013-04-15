@@ -18,11 +18,11 @@ use Symfony\Component\Form\Form;
 
 class SettingsType extends AbstractType
 {
-    protected $em;
+    protected $manager;
 
-    public function __construct($em)
+    public function __construct($manager)
     {
-        $this->em = $em;
+        $this->manager = $manager;
     }
 
     /**
@@ -31,10 +31,9 @@ class SettingsType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $settings = $this->em->getRepository('CSSettingsBundle:Setting');
-
-        foreach($settings->getSections() as $section) {
-            $builder->add($section, new Settings($settings->getSettingsBySection($section, false)));
+        foreach($this->manager->getSections() as $section) {
+            //$builder->add($section, new Settings($this->manager->get($section)));
+            $builder->add($section->getName(), new Settings($this->manager->get($section)));
         }
     }
 

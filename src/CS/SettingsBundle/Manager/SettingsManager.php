@@ -4,10 +4,19 @@ namespace CS\SettingsBundle\Manager;
 
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Common\Collections\Collection;
+use CS\SettingsBundle\Collection\SettingsCollection;
+use CS\SettingsBundle\Entity\Section;
 
 class SettingsManager
 {
     protected $accessor;
+
+    protected $settings;
+
+    protected $sections;
+
+    protected $em;
 
     CONST LEFT_TOKEN = '[';
     CONST RIGHT_TOKEN = ']';
@@ -19,11 +28,48 @@ class SettingsManager
      */
     public function __construct(ManagerRegistry $doctrine)
     {
-        $em = $doctrine->getManager();
+        $this->em = $doctrine->getManager();
 
-        $this->settings = $em->getRepository('CSSettingsBundle:Setting')->getAllSettings();
+        $this->sections = $this->em->getRepository('CSSettingsBundle:Section')->getTopLevelSections();
+
+        $this->settings = new SettingsCollection;
+
+        if(count($this->sections) > 0) {
+            foreach($this->sections as $section) {
+                $this->settings[$section->getName()] = new SettingsCollection;
+
+                $this->getSectionSettings($section, $this->settings[$section->getName()]);
+            }
+        }
 
         $this->accessor = PropertyAccess::getPropertyAccessor();
+    }
+
+    /**
+     * Adds a section settings to the collection
+     *
+     * @param Section $section
+     * @param Collection $collection
+     * @return Collection
+     */
+    protected function getSectionSettings(Section $section, Collection $collection)
+    {
+        $settings = $this->em->getRepository('CSSettingsBundle:Setting')->getSettingsBySection($section, false);
+
+        if(count($section->getChildren()) > 0) {
+            foreach($section->getChildren() as $child) {
+                $collection[$child->getName()] = new SettingsCollection;
+                $this->getSectionSettings($child, $collection[$child->getName()]);
+            }
+        }
+
+        if(is_array($settings) && !empty($settings)) {
+            foreach($settings as $key => $value) {
+                $collection[$value->getKey()] = $value;
+            }
+        }
+
+        return $collection;
     }
 
     /**

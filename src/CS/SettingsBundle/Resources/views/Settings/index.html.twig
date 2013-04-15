@@ -10,9 +10,12 @@
 
 {% extends 'CSCoreBundle:Layout:single_column.html.twig' %}
 
+{% import "CSSettingsBundle::macros.html.twig" as _macro %}
+
 {% block title %}{{ "Settings"|trans }}{% endblock %}
 
 {% block content %}
+
     <div class="tabbable tabs-left">
         <ul class="nav nav-tabs">
             {% for section in sections %}
@@ -28,9 +31,7 @@
             <div class="tab-content">
                 {% for section in sections %}
                     <div class="tab-pane{{ loop.first ? ' active' }}" id="{{ section }}">
-                        <legend>{{ section|title }}</legend>
-
-                {{ form_widget(form[section]) }}
+                        {{ _macro.settings_section(section, form, 1) }}
                     </div>
                 {% endfor %}
             </div>
