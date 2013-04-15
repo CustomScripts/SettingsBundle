@@ -21,12 +21,27 @@ class SettingsController extends Controller
      */
     public function indexAction()
     {
-        $settingsRepository = $this->getRepository('CSSettingsBundle:Setting');
-        $sections = $settingsRepository->getSections(); //array('general', 'quotes', 'invoices', 'email', 'currency', 'Cron');
+        $manager = $this->get('settings');
 
-        $settings = $settingsRepository->getAllSettings();
+        $sections = $manager->getSections();
+        $settings = $manager->getSettings()->toArray();
 
-        $form = $this->createForm(new SettingsType($this->getEm()), $settings);
+        $form = $this->createForm(new SettingsType($manager), $settings);
+
+        $request = $this->getRequest();
+
+        if($request->isMethod('POST')) {
+            $form->bind($request);
+
+            $manager->setArray($request->request->get('settings'));
+
+            $em = $this->getEm();
+            $em->flush();
+
+            $this->flash($this->trans('Settings saved successfully!'));
+
+            return $this->redirect($this->generateUrl($request->get('_route')));
+        }
 
         return $this->render('CSSettingsBundle:Settings:index.html.twig', array('sections' => $sections, 'form' => $form->createView()));
     }

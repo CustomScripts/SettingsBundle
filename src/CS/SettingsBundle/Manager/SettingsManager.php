@@ -7,15 +7,28 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Collections\Collection;
 use CS\SettingsBundle\Collection\SettingsCollection;
 use CS\SettingsBundle\Entity\Section;
+use CS\SettingsBundle\Entity\Setting;
 
 class SettingsManager
 {
+    /**
+     * @var \Symfony\Component\PropertyAccess\PropertyAccessorInterface
+     */
     protected $accessor;
 
+    /**
+     * @var Collection
+     */
     protected $settings;
 
+    /**
+     * @var array
+     */
     protected $sections;
 
+    /**
+     * @var ManagerRegistry
+     */
     protected $em;
 
     CONST LEFT_TOKEN = '[';
@@ -139,5 +152,45 @@ class SettingsManager
     public function getSettings()
     {
         return $this->settings;
+    }
+
+    /**
+     * Set a setting value
+     *
+     * @param string $path
+     * @param mixed $value
+     * @throws \Exception
+     */
+    public function set($path, $value)
+    {
+        $setting = $this->get($path);
+
+        if($setting instanceof Setting) {
+            $setting->setValue($value);
+            $this->em->persist($setting);
+        } else {
+            throw new \Exception(sprintf('Invalid setting path: %s', $path));
+        }
+    }
+
+    /**
+     * Recursively set settings from an array
+     *
+     * @param array $settings
+     * @param string|null $section
+     */
+    public function setArray(array $settings = array(), $section = null)
+    {
+        if(!empty($settings)) {
+            foreach($settings as $key => $value) {
+                $sectionPath = implode('.', array_filter(array($section, $key)));
+
+                if(is_array($value)) {
+                    $this->setArray($value, $sectionPath);
+                } else {
+                    $this->set($sectionPath, $value);
+                }
+            }
+        }
     }
 }
