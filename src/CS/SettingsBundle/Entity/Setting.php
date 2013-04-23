@@ -8,7 +8,6 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Table(name="app_config")
  * @ORM\Entity(repositoryClass="CS\SettingsBundle\Repository\SettingsRepository")
- * @UniqueEntity("key")
  */
 class Setting
 {
@@ -20,7 +19,7 @@ class Setting
     private $id;
 
     /**
-     * @ORM\Column(name="`key`", type="string", length=125, nullable=false, unique=true)
+     * @ORM\Column(name="`key`", type="string", length=125, nullable=false)
      */
     private $key;
 
