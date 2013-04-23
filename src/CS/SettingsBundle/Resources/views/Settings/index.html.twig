@@ -27,7 +27,7 @@
             {% endfor %}
         </ul>
 
-        <form class="form-horizontal" method="post" {{ form_enctype(form) }}>
+        <form method="post" {{ form_enctype(form) }}>
             <div class="tab-content">
                 {% for section in sections %}
                     <div class="tab-pane{{ loop.first ? ' active' }}" id="{{ section }}">
