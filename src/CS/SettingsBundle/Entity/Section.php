@@ -93,10 +93,10 @@ class Section
     /**
      * Set parent
      *
-     * @param self $parent
+     * @param Section $parent
      * @return Section
      */
-    public function setParent(self $parent)
+    public function setParent(Section $parent)
     {
         $this->parent = $parent;
 
@@ -116,10 +116,10 @@ class Section
     /**
      * Add child
      *
-     * @param self $child
+     * @param Section $child
      * @return Section
      */
-    public function addChild(self $child)
+    public function addChild(Section $child)
     {
         $this->children[] = $child;
         $child->setParent($this);
@@ -130,10 +130,10 @@ class Section
     /**
      * Remove child
      *
-     * @param self $child
+     * @param Section $child
      * @return Section
      */
-    public function removeChild(self $child)
+    public function removeChild(Section $child)
     {
         $this->children->removeElement($child);
 
