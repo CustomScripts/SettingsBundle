@@ -34,6 +34,16 @@ class Setting
     private $description;
 
     /**
+     * @ORM\Column(name="field_type", type="string", nullable=true)
+     */
+    private $type;
+
+    /**
+     * @ORM\Column(name="field_options", type="array", nullable=true)
+     */
+    private $options;
+
+    /**
      * @ORM\ManytoOne(targetEntity="Section", inversedBy="settings")
      */
     private $section;
@@ -138,6 +148,49 @@ class Setting
         $this->section = $section;
 
         return $this;
+    }
+
+    /**
+     * Get type
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * Set type
+     *
+     * @param string $type
+     * @return Setting
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Set type
+     *
+     * @param Array $options
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
+
+    /**
+     * Get options
+     *
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     public function __toString()

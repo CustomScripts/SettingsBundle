@@ -36,7 +36,22 @@ class Settings extends AbstractType
             if($setting instanceof ArrayCollection) {
                 $builder->add($key, new self($setting));
             } else {
-                $builder->add($setting->getKey(), null, array('help' => $setting->getDescription()));
+                $options = array('help' => $setting->getDescription());
+                $type = $setting->getType();
+
+                $settingOptions = $setting->getOptions();
+
+                if(!empty($settingOptions)) {
+                    $options['choices'] = array_combine($settingOptions, $settingOptions);
+                }
+
+                if($setting->getType() === 'radio') {
+                    $type = 'choice';
+                    $options['expanded'] = true;
+                    $options['multiple'] = false;
+                }
+
+                $builder->add($setting->getKey(), $type, $options);
             }
         }
     }
