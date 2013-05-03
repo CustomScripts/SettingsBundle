@@ -13,17 +13,19 @@ namespace CS\SettingsBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use CS\SettingsBundle\Manager\SettingsManager;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Symfony\Component\Form\Form;
 
+/**
+ * Class SettingsType
+ * @package CS\SettingsBundle\Form\Type
+ */
 class SettingsType extends AbstractType
 {
+    /**
+     * @var SettingsManager
+     */
     protected $manager;
-
-    public function __construct($manager)
-    {
-        $this->manager = $manager;
-    }
 
     /**
      * (non-PHPdoc)
@@ -31,9 +33,12 @@ class SettingsType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        foreach($this->manager->getSections() as $section) {
-            //$builder->add($section, new Settings($this->manager->get($section)));
-            $builder->add($section->getName(), new Settings($this->manager->get($section)));
+        $this->manager = $options['manager'];
+
+        $settings = $this->manager->getSettings();
+
+        foreach ($settings as $section => $setting) {
+            $builder->add($section, new Settings($this->manager->get($section)));
         }
     }
 
@@ -44,5 +49,13 @@ class SettingsType extends AbstractType
     public function getName()
     {
         return 'settings';
+    }
+
+    /**
+     * @param OptionsResolverInterface $resolver
+     */
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    {
+        $resolver->setRequired(array('manager'));
     }
 }

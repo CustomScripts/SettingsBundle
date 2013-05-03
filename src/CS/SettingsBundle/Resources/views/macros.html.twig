@@ -1,17 +1,30 @@
-{% macro settings_section(section, form, level = 1) %}
-    {% set form_extras %}{% spaceless %}
-        {% for child in section.children %}
-            {{ _self.settings_section(child, form[section], level + 1) }}
-        {% endfor %}
-        {% endspaceless %}{% endset %}
+{#
+# This file is part of the CSSettingsBundle package.
+#
+# (c) Pierre du Plessis <info@customscripts.co.za>
+#
+# For the full copyright and license information, please view the LICENSE
+# file that was distributed with this source code.
+#}
 
-     {% if form[section]|length and not form_extras|length %}
+{% macro settings_section(section, settings, form) %}
+
+    {% set form_extras %}
+        {% for parent, setting in settings %}
+            {% if setting is iterable %}
+                {{ _self.settings_section(parent, setting, form[section]) }}
+            {% endif %}
+        {% endfor %}
+    {% endset %}
+
+    {% if not form[section].rendered %}
         <legend>
-            {{ section|title }}
+        {{ section|title }}
         </legend>
+
+        {{ form_widget(form[section]) }}
     {% endif %}
 
-    {{ form_widget(form[section]) }}
-
     {{ form_extras }}
+
 {% endmacro %}

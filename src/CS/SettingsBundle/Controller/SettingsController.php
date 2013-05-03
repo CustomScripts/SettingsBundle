@@ -13,36 +13,44 @@ namespace CS\SettingsBundle\Controller;
 
 use CS\CoreBundle\Controller\Controller;
 use CS\SettingsBundle\Form\Type\SettingsType;
+use CS\SettingsBundle\Model\Setting;
 
+/**
+ * Class SettingsController
+ * @package CS\SettingsBundle\Controller
+ */
 class SettingsController extends Controller
 {
     /**
      * Settings action
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction()
     {
+        /** @var \CS\SettingsBundle\Manager\SettingsManager $manager */
         $manager = $this->get('settings');
 
-        $sections = $manager->getSections();
         $settings = $manager->getSettings()->toArray();
 
-        $form = $this->createForm(new SettingsType($manager), $settings);
+        array_walk_recursive($settings, function(Setting &$setting){
+            $setting = $setting->getValue();
+        });
+
+        $form = $this->createForm(new SettingsType(), $settings, array('manager' => $manager));
 
         $request = $this->getRequest();
 
-        if($request->isMethod('POST')) {
+        if ($request->isMethod('POST')) {
             $form->bind($request);
 
-            $manager->setArray($request->request->get('settings'));
-
-            $em = $this->getEm();
-            $em->flush();
+            $manager->set($request->request->get('settings'));
 
             $this->flash($this->trans('Settings saved successfully!'));
 
             return $this->redirect($this->generateUrl($request->get('_route')));
         }
 
-        return $this->render('CSSettingsBundle:Settings:index.html.twig', array('sections' => $sections, 'form' => $form->createView()));
+        return $this->render('CSSettingsBundle:Settings:index.html.twig', array('settings' => $settings, 'form' => $form->createView()));
     }
 }

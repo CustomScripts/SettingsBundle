@@ -1,7 +1,26 @@
+#
+# This file is part of the CSSettingsBundle package.
+#
+# (c) Pierre du Plessis <info@customscripts.co.za>
+#
+# For the full copyright and license information, please view the LICENSE
+# file that was distributed with this source code.
+#
+
 parameters:
     cs.settings.class: CS\SettingsBundle\Manager\SettingsManager
+    cs_settings.doctrine.loader.class: CS\SettingsBundle\Loader\DoctrineLoader
 
 services:
-    settings:
+    cs_settings.manager:
         class: %cs.settings.class%
         arguments: [@doctrine]
+
+    settings:
+        alias: cs_settings.manager
+
+    cs_settings.doctrine.loader:
+            class: %cs_settings.doctrine.loader.class%
+            arguments: [@doctrine]
+            tags:
+                - { name: settings.loader }

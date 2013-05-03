@@ -1,31 +1,25 @@
 <?php
 
+/*
+ * This file is part of the CSSettingsBundle package.
+ *
+ * (c) Pierre du Plessis <info@customscripts.co.za>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CS\SettingsBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use CS\CoreBundle\Util\ArrayUtil;
 
+/**
+ * Class SettingsRepository
+ * @package CS\SettingsBundle\Repository
+ */
 class SettingsRepository extends EntityRepository
 {
-    /**
-     * Returns an array of all the settings
-     *
-     * @return array
-     */
-    public function getAllSettings()
-    {
-        $sections = $this->getSections();
-
-        if (count($sections) > 0) {
-            $settings = array();
-            foreach ($sections as $section) {
-                $settings[$section] = $this->getSettingsBySection($section);
-            }
-        }
-
-        return $settings;
-    }
-
     /**
      * Gets section specific settings
      *
@@ -36,18 +30,16 @@ class SettingsRepository extends EntityRepository
     public function getSettingsBySection($section, $combineArray = true)
     {
         $qb = $this->createQueryBuilder('s')
-                    //->select('s.key, s.value')
                     ->where('s.section = :section')
                     ->orderBy('s.key', 'ASC')
                     ->setParameter('section', $section);
 
         $query = $qb->getQuery()
-                    ->useQueryCache(true)
-                    ->useResultCache(true, (60 * 60 * 24 * 7), 'app_config_section['.$section.']'); // we cache the config result, as the cache is cleared as soon as the config settings is changed
+                    ->useQueryCache(true);
 
         $result = $query->getResult();
 
-        if(count($result) > 0) {
+        if (count($result) > 0) {
             if ($combineArray) {
                 return array_combine(ArrayUtil::column($result, 'key'), ArrayUtil::column($result, 'value'));
             }

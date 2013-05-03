@@ -1,15 +1,29 @@
 <?php
 
+/*
+ * This file is part of the CSSettingsBundle package.
+ *
+ * (c) Pierre du Plessis <info@customscripts.co.za>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CS\SettingsBundle\Manager;
 
+use CS\SettingsBundle\Collection\ConfigCollection;
+use CS\SettingsBundle\Loader\SettingsLoaderInterface;
+use CS\SettingsBundle\Exception\InvalidSettingException;
+use CS\SettingsBundle\Model\Setting;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\Common\Collections\Collection;
-use CS\SettingsBundle\Collection\SettingsCollection;
-use CS\SettingsBundle\Entity\Section;
-use CS\SettingsBundle\Entity\Setting;
+use Zend\Config\Config;
 
-class SettingsManager
+/**
+ * Class SettingsManager
+ * @package CS\SettingsBundle\Manager
+ */
+class SettingsManager implements ManagerInterface
 {
     /**
      * @var \Symfony\Component\PropertyAccess\PropertyAccessorInterface
@@ -31,78 +45,93 @@ class SettingsManager
      */
     protected $em;
 
+    /**
+     * @var ConfigCollection
+     */
+    protected $collection;
+
+    /**
+     * @var bool
+     */
+    protected $initialized;
+
+    /**
+     * @var array
+     */
+    protected $loaders = array();
+
     CONST LEFT_TOKEN = '[';
     CONST RIGHT_TOKEN = ']';
 
     /**
      * Constructor
      *
-     * @param EntityManager $em
+     * @param ManagerRegistry $doctrine
      */
     public function __construct(ManagerRegistry $doctrine)
     {
+        $this->initialized = false;
+
         $this->em = $doctrine->getManager();
 
-        $this->sections = $this->em->getRepository('CSSettingsBundle:Section')->getTopLevelSections();
-
-        $this->settings = new SettingsCollection;
-
-        if(count($this->sections) > 0) {
-            foreach($this->sections as $section) {
-                $this->settings[$section->getName()] = new SettingsCollection;
-
-                $this->getSectionSettings($section, $this->settings[$section->getName()]);
-            }
-        }
+        $this->settings = new Config(array());
 
         $this->accessor = PropertyAccess::getPropertyAccessor();
     }
 
     /**
-     * Adds a section settings to the collection
-     *
-     * @param Section $section
-     * @param Collection $collection
-     * @return Collection
+     * Initializes the loaders and load the default settings
      */
-    protected function getSectionSettings(Section $section, Collection $collection)
+    protected function initialize()
     {
-        $settings = $this->em->getRepository('CSSettingsBundle:Setting')->getSettingsBySection($section, false);
+        $this->initialized = true;
 
-        if(count($section->getChildren()) > 0) {
-            foreach($section->getChildren() as $child) {
-                $collection[$child->getName()] = new SettingsCollection;
-                $this->getSectionSettings($child, $collection[$child->getName()]);
-            }
+        $this->collection = new ConfigCollection($this);
+
+        foreach ($this->loaders as $loader) {
+
+            /** @var SettingsLoaderInterface $loader */
+            $this->collection->startSection(get_class($loader));
+
+                $settings = new Config($loader->getSettings());
+
+                $this->collection->add($settings);
+
+                $this->settings->merge($settings);
+
+            $this->collection->endSection();
         }
-
-        if(is_array($settings) && !empty($settings)) {
-            foreach($settings as $key => $value) {
-                $collection[$value->getKey()] = $value;
-            }
-        }
-
-        return $collection;
     }
 
     /**
-     * Returns a setting value
-     *
-     * @param  string     $setting
-     * @throws \Exception
-     * @return mixed
+     * @param  SettingsLoaderInterface      $loader
+     * @return SettingsLoaderInterface|void
+     */
+    public function addSettingsLoader(SettingsLoaderInterface $loader)
+    {
+        $this->loaders[get_class($loader)] = $loader;
+    }
+
+    /**
+     * @param  string|null                                          $setting
+     * @return mixed|string
+     * @throws \CS\SettingsBundle\Exception\InvalidSettingException
      */
     public function get($setting = null)
     {
-        if(empty($setting)) {
+        if (!$this->initialized) {
+            $this->initialize();
+        }
+
+        if (empty($setting)) {
             return $this->getSettings();
         }
 
-        if (strpos($setting, '.') !== false) {
+        if (false !== strpos($setting, '.')) {
             $split = array_filter(explode('.', $setting));
 
             if (!count($split) > 1) {
-                throw new \Exception(sprintf('Invalid settings option: %s', $setting));
+                throw new InvalidSettingException($setting);
             }
 
             unset($setting);
@@ -111,7 +140,7 @@ class SettingsManager
 
             foreach ($split as $value) {
 
-                if (strpos($value, self::LEFT_TOKEN) !== 0) {
+                if (0 !== strpos($value, self::LEFT_TOKEN)) {
                     $setting .= self::LEFT_TOKEN;
                 }
 
@@ -123,7 +152,7 @@ class SettingsManager
             }
         }
 
-        if (strpos($setting, self::LEFT_TOKEN) !== 0) {
+        if (0 !== strpos($setting, self::LEFT_TOKEN)) {
             $setting = self::LEFT_TOKEN . $setting;
         }
 
@@ -131,66 +160,89 @@ class SettingsManager
              $setting .= self::RIGHT_TOKEN;
         }
 
-        return $this->accessor->getValue($this->settings, $setting);
+        $entity = $this->accessor->getValue($this->settings, $setting);
+
+        if ($entity instanceof Setting) {
+            return $entity->getValue();
+        } else {
+            return $entity;
+        }
     }
 
     /**
-     * Get all the top-level sections
-     *
-     * @return array
-     */
-    public function getSections()
-    {
-        return $this->sections;
-    }
-
-    /**
-     * Get the settings
-     *
-     * @return ArrayCollection
+     * @return mixed|Config
      */
     public function getSettings()
     {
-        return $this->settings;
-    }
-
-    /**
-     * Set a setting value
-     *
-     * @param string $path
-     * @param mixed $value
-     * @throws \Exception
-     */
-    public function set($path, $value)
-    {
-        $setting = $this->get($path);
-
-        if($setting instanceof Setting) {
-            $setting->setValue($value);
-            $this->em->persist($setting);
-        } else {
-            throw new \Exception(sprintf('Invalid setting path: %s', $path));
+        if (!$this->initialized) {
+            $this->initialize();
         }
+
+        return $this->settings;
     }
 
     /**
      * Recursively set settings from an array
      *
-     * @param array $settings
-     * @param string|null $section
+     * @param  array      $settings
+     * @return mixed|void
      */
-    public function setArray(array $settings = array(), $section = null)
+    public function set(array $settings = array())
     {
-        if(!empty($settings)) {
-            foreach($settings as $key => $value) {
-                $sectionPath = implode('.', array_filter(array($section, $key)));
+        if (!$this->initialized) {
+            $this->initialize();
+        }
 
-                if(is_array($value)) {
-                    $this->setArray($value, $sectionPath);
+        if (!empty($settings)) {
+
+            foreach ($this->collection->getSections() as $collectionSection) {
+
+                $this->collection->startSection($collectionSection);
+
+                $collectionSettings = array();
+
+                foreach ($settings as $key => $value) {
+
+                    $config = $this->collection->getSettings();
+
+                    if (isset($config[$key])) {
+                        $collectionSettings[$key] = $this->setData($config[$key], $value);
+                    }
+                }
+
+                /** @var SettingsLoaderInterface $loader */
+                $loader = $this->loaders[$collectionSection];
+                $loader->saveSettings($collectionSettings);
+
+                $this->collection->endSection();
+            }
+        }
+    }
+
+    /**
+     * @param  Config $config
+     * @param  array  $settings
+     * @return array
+     */
+    protected function setData(Config $config, array $settings)
+    {
+        $settingsArray = array();
+
+        foreach ($config as $section => $setting) {
+
+            foreach ($settings as $key => $value) {
+                if (is_array($value)) {
+                    $settingsArray[$key] = $this->setData($setting, $value);
                 } else {
-                    $this->set($sectionPath, $value);
+                    if ($section === $key) {
+                        /** @var \CS\SettingsBundle\Model\Setting $setting */
+                        $setting->setValue($value);
+                        $settingsArray[$key] = $setting;
+                    }
                 }
             }
         }
+
+        return $settingsArray;
     }
 }

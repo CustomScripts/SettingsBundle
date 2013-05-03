@@ -18,7 +18,7 @@
 
     <div class="tabbable tabs-left">
         <ul class="nav nav-tabs">
-            {% for section in sections %}
+            {% for section,setting in settings %}
                 <li{{ loop.first ? ' class="active"' }}>
                     <a href="#{{ section }}" data-toggle="tab">
                         {{ section|trans|title }}
@@ -29,9 +29,9 @@
 
         <form method="post" {{ form_enctype(form) }}>
             <div class="tab-content">
-                {% for section in sections %}
+                {% for section,setting in settings %}
                     <div class="tab-pane{{ loop.first ? ' active' }}" id="{{ section }}">
-                        {{ _macro.settings_section(section, form, 1) }}
+                        {{ _macro.settings_section(section, setting, form) }}
                     </div>
                 {% endfor %}
             </div>

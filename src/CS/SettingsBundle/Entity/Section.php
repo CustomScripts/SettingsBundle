@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the CSSettingsBundle package.
+ *
+ * (c) Pierre du Plessis <info@customscripts.co.za>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CS\SettingsBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -7,6 +16,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
+ * Class Section
+ *
+ * @package CS\SettingsBundle\Entity
+ *
  * @ORM\Table(name="config_sections")
  * @ORM\Entity(repositoryClass="CS\SettingsBundle\Repository\SectionRepository")
  * @UniqueEntity("name")
@@ -70,8 +83,8 @@ class Section
     /**
      * Set name
      *
-     * @param  string  $name
-     * @return Section
+     * @param string $name
+     * @return $this
      */
     public function setName($name)
     {
@@ -93,7 +106,7 @@ class Section
     /**
      * Set parent
      *
-     * @param Section $parent
+     * @param  Section $parent
      * @return Section
      */
     public function setParent(Section $parent)
@@ -116,7 +129,7 @@ class Section
     /**
      * Add child
      *
-     * @param Section $child
+     * @param  Section $child
      * @return Section
      */
     public function addChild(Section $child)
@@ -130,7 +143,7 @@ class Section
     /**
      * Remove child
      *
-     * @param Section $child
+     * @param  Section $child
      * @return Section
      */
     public function removeChild(Section $child)
@@ -152,7 +165,7 @@ class Section
 
     /**
      * Add a setting
-     * @param Setting $setting
+     * @param  Setting $setting
      * @return Section
      */
     public function addSetting(Setting $setting)
@@ -166,7 +179,7 @@ class Section
     /**
      * Remove a setting
      *
-     * @param Setting $setting
+     * @param  Setting $setting
      * @return Section
      */
     public function removeSetting(Setting $setting)
@@ -176,6 +189,9 @@ class Section
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         return $this->name;
