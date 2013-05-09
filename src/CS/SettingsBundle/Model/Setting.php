@@ -12,6 +12,7 @@
 namespace CS\SettingsBundle\Model;
 
 use Doctrine\ORM\Mapping as ORM;
+use CS\SettingsBundle\Entity\Section;
 
 /**
  * Class Setting
