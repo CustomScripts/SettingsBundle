@@ -46,23 +46,40 @@ class Settings extends AbstractType
             } else {
                 /** @var \CS\SettingsBundle\Model\Setting $setting */
                 $options = array('help' => $setting->getDescription());
-                $type = $setting->getType();
 
-                $settingOptions = $setting->getOptions();
-
-                if (!empty($settingOptions)) {
-                    $options['choices'] = array_combine($settingOptions, $settingOptions);
-                }
-
-                if ($setting->getType() === 'radio') {
-                    $type = 'choice';
-                    $options['expanded'] = true;
-                    $options['multiple'] = false;
-                }
+                $type = $this->getFieldType($setting, $options);
 
                 $builder->add($setting->getKey(), $type, $options);
             }
         }
+    }
+
+    protected function getFieldType($setting, array &$options = array())
+    {
+        $type = $setting->getType();
+
+        if ('radio' === $type) {
+            $type = 'choice';
+            $options['expanded'] = true;
+            $options['multiple'] = false;
+        }
+
+        if ('chosen' === $type) {
+            $type = 'choice';
+            $options['attr'] = array('class' => 'chosen');
+        }
+
+        if('choice' === $type) {
+            $settingOptions = $setting->getOptions();
+
+            $options['choices'] = $settingOptions;
+
+            /*if (!empty($settingOptions)) {
+                $options['choices'] = array_combine($settingOptions, $settingOptions);
+            }*/
+        }
+
+        return $type;
     }
 
     /**
