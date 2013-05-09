@@ -231,7 +231,7 @@ class SettingsManager implements ManagerInterface
         foreach ($config as $section => $setting) {
 
             foreach ($settings as $key => $value) {
-                if (is_array($value)) {
+                if (is_array($value) && $setting instanceof Config) {
                     $settingsArray[$key] = $this->setData($setting, $value);
                 } else {
                     if ($section === $key) {
