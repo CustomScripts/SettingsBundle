@@ -14,6 +14,7 @@ namespace CS\SettingsBundle\Loader;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Persistence\ObjectManager;
 use CS\SettingsBundle\Loader\SettingsLoaderInterface;
+use Doctrine\DBAL\DBALException;
 
 /**
  * Class DoctrineLoader
@@ -29,6 +30,11 @@ class DoctrineLoader implements SettingsLoaderInterface
      * @var ObjectManager
      */
     protected $manager;
+
+    /**
+     * @var array
+     */
+    protected $sections;
 
     /**
      * @param ManagerRegistry $doctrine
@@ -68,15 +74,15 @@ class DoctrineLoader implements SettingsLoaderInterface
      */
     public function getSettings()
     {
-        /** @var \CS\SettingsBundle\Repository\SectionRepository $repository */
-        $repository = $this->manager->getRepository('CSSettingsBundle:Section');
-        $sections = $repository->getTopLevelSections();
+        if(!$this->checkConnection()) {
+            return array();
+        }
 
-        return $this->addSettings($sections);
+        return $this->addSettings($this->sections);
     }
 
     /**
-     * @param  array|\ArrayAccess $sections
+     * @param array|\ArrayAccess $sections
      * @return array
      */
     protected function addSettings($sections)
@@ -103,5 +109,24 @@ class DoctrineLoader implements SettingsLoaderInterface
         }
 
         return $settings;
+    }
+
+    /**
+     * Check if we can connect to the database and if the tables are loaded
+     * @return bool
+     */
+    protected function checkConnection()
+    {
+        try {
+            /** @var \CS\SettingsBundle\Repository\SectionRepository $repository */
+            $repository = $this->manager->getRepository('CSSettingsBundle:Section');
+            $this->sections = $repository->getTopLevelSections();
+        } catch(DBALException $e) {
+            return false;
+        } catch (\PDOException $e) {
+            return false;
+        }
+
+        return true;
     }
 }
