@@ -15,9 +15,9 @@
     ],
     "require": {
         "php": ">=5.3.3",
-        "symfony/framework-bundle": "2.2.*@dev",
+        "symfony/framework-bundle": "~2.3",
         "customscripts/core-bundle" : "dev-master",
-        "zendframework/zend-config": "2.1.*"
+        "zendframework/zend-config": "~2.2"
     },
     "minimum-stability": "dev",
     "autoload": {
