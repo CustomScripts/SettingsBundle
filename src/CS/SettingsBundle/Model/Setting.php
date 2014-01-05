@@ -48,7 +48,7 @@ class Setting
     protected $options;
 
     /**
-     * @ORM\ManytoOne(targetEntity="Section", inversedBy="settings")
+     * @ORM\ManyToOne(targetEntity="Section", inversedBy="settings")
      */
     protected $section;
 
